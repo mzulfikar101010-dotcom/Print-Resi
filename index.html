@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Rapikan Resi</title>
+<meta name="theme-color" content="#0d6b5b">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=Figtree:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#e8edf1;--card:#fff;--ink:#121a22;--mute:#5d6b78;--line:#cdd6dd;--acc:#0d6b5b;--acc-ink:#fff;--tape:#ffd23f;--warn:#a4400f;--danger:#d63a3a;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f161c;--card:#18222b;--ink:#eaf0f4;--mute:#97a6b3;--line:#2c3a46;--acc:#38c2a8;--acc-ink:#04201a;--warn:#ffa26b;--danger:#ff7b7b}}
+:root[data-theme="dark"]{--bg:#0f161c;--card:#18222b;--ink:#eaf0f4;--mute:#97a6b3;--line:#2c3a46;--acc:#38c2a8;--acc-ink:#04201a;--warn:#ffa26b;--danger:#ff7b7b}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.5 Figtree,system-ui,sans-serif}
+main{max-width:860px;margin:0 auto;padding:28px 16px 64px}
+.top{display:flex;gap:12px;justify-content:space-between;align-items:flex-start}
+h1{font:800 34px/1.1 'Bricolage Grotesque',Figtree,sans-serif;margin:0 0 6px;letter-spacing:-.01em}
+h2{font:600 19px/1.2 'Bricolage Grotesque',Figtree,sans-serif;margin:0 0 12px}
+.sub{color:var(--mute);margin:0 0 24px}
+section{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:16px}
+.drop{border:2px dashed var(--line);border-radius:10px;padding:26px 14px;text-align:center;color:var(--mute);cursor:pointer;transition:.15s}
+.drop.on,.drop:hover,.drop:focus-visible{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 8%,transparent);outline:none}
+.drop b{color:var(--ink)}
+ul{list-style:none;margin:12px 0 0;padding:0}
+li.f{display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
+li.f span.n{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+li.f small{color:var(--mute)}
+button{font:700 14px Figtree,sans-serif;border-radius:8px;border:1px solid var(--line);background:transparent;color:var(--ink);padding:9px 16px;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+button.p{background:var(--acc);color:var(--acc-ink);border-color:var(--acc);font-size:16px;padding:13px 26px}
+button.x{padding:3px 9px;border-radius:6px;color:var(--mute)}
+button:disabled{opacity:.5;cursor:not-allowed}
+label{display:block;font-weight:700;margin-bottom:6px}
+input[type=text]{width:100%;max-width:340px;font:500 16px Figtree,sans-serif;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+.thumb{width:84px;height:84px;border:2px dashed var(--line);border-radius:8px;display:grid;place-items:center;text-align:center;font-size:12px;color:var(--mute);cursor:pointer;overflow:hidden;background:var(--bg);flex:none}
+.thumb.on,.thumb:hover{border-color:var(--acc)}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.thumb.sm{width:64px;height:64px;font-size:11px}
+.fthumb{width:260px;height:56px}
+.fthumb img{object-fit:contain;background:#fff}
+.frow{display:flex;gap:12px;align-items:center;margin-top:12px;flex-wrap:wrap}
+.prod{display:flex;gap:14px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.prod:first-child{border-top:0}
+.prod .t{flex:1;min-width:0}
+.prod .t b{display:block;text-transform:uppercase;overflow-wrap:anywhere}
+.prod .t span{color:var(--mute);font-size:13px}
+.tag{display:inline-block;background:var(--tape);color:#121a22;font-weight:700;font-size:12px;padding:1px 8px;border-radius:4px;margin-right:6px}
+button.rm{width:42px;height:42px;padding:0;flex:none;display:grid;place-items:center;border:2px solid var(--danger);color:var(--danger);border-radius:8px;background:transparent}
+button.rm:hover{background:var(--danger);color:#fff}
+button.rm svg{width:20px;height:20px}
+.msg{margin:12px 0 0;color:var(--mute)}.msg.w{color:var(--warn)}
+#rb{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.chk{display:flex;gap:8px;align-items:center;margin-top:14px;font-weight:500}.chk input{width:18px;height:18px}
+.bar{height:8px;background:var(--line);border-radius:4px;overflow:hidden;margin-top:12px}.bar i{display:block;height:100%;width:0;background:var(--acc);transition:width .1s}
+.acts{display:flex;gap:12px;flex-wrap:wrap;margin-top:6px}
+.tabs{display:inline-flex;gap:4px;padding:4px;background:var(--card);border:1px solid var(--line);border-radius:14px;margin:0 0 16px}
+.tabs button{border:0;border-radius:10px;padding:9px 20px;font:700 14px Figtree,sans-serif;color:var(--mute);background:transparent}
+.tabs button[aria-selected="true"]{background:var(--acc);color:var(--acc-ink)}
+.tabs button:disabled{opacity:.4;cursor:not-allowed}
+.stepper{display:flex;align-items:center;gap:10px;margin:4px 0 6px}
+.stepper button{width:46px;height:46px;padding:0;border-radius:50%;font-size:24px;line-height:1;display:grid;place-items:center}
+.stepper input{width:92px;height:46px;text-align:center;font:800 24px 'Bricolage Grotesque',Figtree,sans-serif;border:1px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink);-moz-appearance:textfield}
+.stepper input::-webkit-outer-spin-button,.stepper input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.stepper span{color:var(--mute)}
+.stat{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
+.stat div{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px 14px}
+.stat b{display:block;font:800 28px/1.1 'Bricolage Grotesque',Figtree,sans-serif}
+.stat span{color:var(--mute);font-size:12.5px}
+.takerow{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.takerow input{width:170px;font:800 22px 'Bricolage Grotesque',Figtree,sans-serif;padding:9px 12px;border:1px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink);-moz-appearance:textfield}
+.takerow input::-webkit-outer-spin-button,.takerow input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.cfgc{border:1px solid var(--line);border-radius:14px;padding:14px;margin-top:12px;background:var(--bg)}
+.cfgc .chead{display:flex;gap:12px;align-items:center;margin-bottom:12px}
+.cfgc .chead .pt{flex:1;min-width:0}
+.cfgc .chead .pt b{display:block}
+.cfgc .chead .pt span{display:block;color:var(--mute);font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pn{width:38px;height:38px;border-radius:10px;background:var(--acc);color:var(--acc-ink);display:grid;place-items:center;font:800 17px 'Bricolage Grotesque',Figtree,sans-serif;flex:none}
+.cprods{margin-top:12px;display:grid;gap:8px}
+.cprod{display:flex;gap:12px;align-items:center;padding:8px;border:1px solid var(--line);border-radius:10px;background:var(--card)}
+.cprod .t{flex:1;min-width:0}
+.cprod .t b{display:block;text-transform:uppercase;font-size:13px;overflow-wrap:anywhere}
+.cprod .t span{color:var(--mute);font-size:12.5px}
+.pact{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:12px;min-height:34px}
+.pact .ok{color:var(--acc);font-weight:700;font-size:13px;overflow-wrap:anywhere}
+a.dlb{display:inline-block;text-decoration:none;font:700 13px Figtree,sans-serif;border-radius:8px;border:1px solid var(--acc);color:var(--acc);padding:7px 12px;flex:none}
+a.dlb:hover{background:var(--acc);color:var(--acc-ink)}
+#inst{border-color:var(--acc);color:var(--acc)}
+input[type=password]{width:100%;font:500 16px Figtree,sans-serif;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+.lg{position:fixed;inset:0;background:var(--bg);z-index:50;display:grid;place-items:center;padding:16px;overflow:auto}
+.lgc{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:24px;width:100%;max-width:420px}
+table.rt{border-collapse:collapse;width:100%;font-size:13px;margin-top:10px}
+table.rt th,table.rt td{text-align:left;padding:8px 10px;border-top:1px solid var(--line);white-space:nowrap}
+table.rt th{color:var(--mute);font-weight:700}
+[hidden]{display:none!important}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+</head>
+<body>
+<main>
+<div class="top">
+ <div><h1>Rapikan Resi</h1>
+ <p class="sub">Upload PDF resi TikTok, urutkan per produk, bagi jadi beberapa file, beri nama packer dan gambar, lalu convert dan tampilkan. Semua diproses di perangkatmu, tidak ada yang diunggah ke server.</p></div>
+ <div class="acts" style="margin:0;flex:none"><button class="x" id="inst" type="button" hidden>Instal di PC</button><button class="x" id="reset" type="button">Mulai ulang</button><button class="x" id="logout" type="button">Keluar</button></div>
+</div>
+
+<section>
+<h2>1. Upload PDF resi</h2>
+<div class="drop" id="dz" tabindex="0" role="button"><b>Tarik file PDF ke sini</b> atau klik untuk memilih<br><small>Bisa banyak file sekaligus, atau berkali-kali. File baru ditambahkan, bukan menggantikan.</small></div>
+<input type="file" id="fi" accept="application/pdf" multiple hidden>
+<ul id="fl"></ul>
+<p class="msg" id="pm" hidden></p>
+</section>
+
+<div id="flow" hidden>
+
+<section>
+<h2>2. Produk di resi</h2>
+<p class="msg" style="margin-top:0">Tekan tombol silang pada produk yang tidak mau diprint.</p>
+<div id="pl"></div>
+<p class="msg w" id="mw" hidden></p>
+<div class="msg" id="rb" hidden><span id="rt"></span><button class="x" id="ru" type="button">Kembalikan semua</button></div>
+<label class="chk" id="dd" hidden><input type="checkbox" id="dc"><span id="dt"></span></label>
+</section>
+
+<section>
+<h2>3. Bagi jadi berapa file?</h2>
+<div class="tabs" role="tablist"><button role="tab" data-mode="even" aria-selected="true">Bagi rata</button><button role="tab" data-mode="manual" aria-selected="false">Tentukan sendiri</button></div>
+
+<div id="me">
+<div class="stepper"><button type="button" id="mn" aria-label="Kurangi jumlah file">&minus;</button><input type="number" id="np" min="1" value="1" inputmode="numeric" aria-label="Jumlah file hasil"><button type="button" id="pls" aria-label="Tambah jumlah file">+</button><span>file</span></div>
+<p class="msg" id="sm"></p>
+</div>
+
+<div id="mm" hidden>
+<div class="stat"><div><b id="mt">0</b><span>Total resi</span></div><div><b id="mk">0</b><span>Sudah diambil</span></div><div><b id="mr">0</b><span>Sisa</span></div></div>
+<div class="bar"><i id="mb"></i></div>
+<label for="tn" style="margin-top:16px">Mau ambil berapa resi untuk file berikutnya?</label>
+<div class="takerow"><input type="number" id="tn" min="1" inputmode="numeric" placeholder="Contoh: 200"><button class="p" id="tc" type="button">Konfirmasi</button><button id="tall" type="button">Ambil semua sisa</button></div>
+<p class="msg" id="tr"></p>
+<div class="acts" style="margin-top:10px"><button id="tre" type="button" hidden>Ulangi pembagian</button></div>
+</div>
+</section>
+
+<section id="s4" hidden>
+<h2>4. Atur nama dan gambar tiap file</h2>
+<p class="msg" style="margin-top:0">Isi nama packer di tiap file. Gambar produk cukup diisi sekali, dipakai di semua file yang berisi produk itu.</p>
+<div class="frow"><div class="thumb fthumb" id="ft" tabindex="0" role="button" aria-label="Gambar footer">Gambar footer (opsional)</div><button class="x" id="fd" type="button" hidden>Hapus</button><input type="file" id="ffi" accept="image/*" hidden></div>
+<p class="msg" id="cs"></p>
+<div id="cfg"></div>
+<input type="file" id="cfi" accept="image/*" hidden>
+<div class="acts" style="margin-top:16px"><button class="p" id="cgo" type="button">Convert semua</button><button class="p" id="ctk" type="button" hidden>Tampilkan</button><button id="cda" type="button" hidden>Download semua</button></div>
+<div class="bar" id="cbar" hidden><i></i></div>
+<p class="msg" id="cst" aria-live="polite"></p>
+</section>
+
+</div>
+
+<section id="sr">
+<h2>Cari riwayat resi</h2>
+<p class="msg" style="margin-top:0">Ketik nomor resi atau Order ID (boleh sebagian, minimal 4 karakter) untuk tahu resi itu dipacking siapa.</p>
+<div class="takerow"><input type="text" id="sq" placeholder="Contoh: JY1966278926" autocomplete="off" style="max-width:320px"><button class="p" id="sgo" type="button">Cari</button></div>
+<p class="msg" id="sms"></p>
+<div style="overflow-x:auto"><table class="rt" id="stb" hidden><thead><tr><th>Order ID</th><th>Resi</th><th>Nama barang</th><th>Qty</th><th>Packer</th><th>Waktu</th></tr></thead><tbody></tbody></table></div>
+</section>
+</main>
+
+<div class="lg" id="lg" hidden role="dialog" aria-modal="true" aria-labelledby="lgt">
+ <div class="lgc">
+  <h2 id="lgt">Masuk</h2>
+  <p class="msg" style="margin-top:0">Perangkat baru perlu kata sandi. Setelah berhasil masuk, perangkat ini tidak akan menanyakannya lagi.</p>
+  <div id="lgur" hidden><label for="lgu">Alamat Apps Script (berakhiran /exec)</label><input type="text" id="lgu" placeholder="https://script.google.com/macros/s/.../exec" autocomplete="off" style="max-width:none"></div>
+  <label for="lgd" style="margin-top:12px">Nama perangkat (boleh dikosongkan)</label><input type="text" id="lgd" placeholder="Contoh: PC Gudang" autocomplete="off">
+  <label for="lgp" style="margin-top:12px">Kata sandi</label><input type="password" id="lgp" autocomplete="current-password">
+  <div class="acts" style="margin-top:16px"><button class="p" id="lgb" type="button">Masuk</button></div>
+  <p class="msg" id="lgm" aria-live="polite"></p>
+ </div>
+</div>
+
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+const $=s=>document.querySelector(s),norm=s=>s.replace(/\s+/g,' ').trim();
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const OK=/[^\x20-\x7E\u00A0-\u00FF]/g;
+const coll=new Intl.Collator('id',{numeric:true,sensitivity:'base'});
+const UNREAD='(produk tidak terbaca)';
+const S={files:[],uid:0,drop:new Set(),dedup:false,mode:'even',n:1,pos:0,parts:[],agg:[],imgs:{},foot:{bytes:null,w:1000,h:200,url:null},busy:false,cbusy:false,tgt:null};
+const msg=(sel,t,w)=>{const e=$(sel);e.hidden=!t;e.textContent=t||'';e.classList.toggle('w',!!w);};
+
+/* ================= Baca teks resi ================= */
+function lineItems(items){
+ const raw=items.filter(x=>x.str&&x.str.trim()).map(x=>({s:x.str,x:x.transform[4],y:x.transform[5],w:x.width||0,h:Math.abs(x.height||x.transform[3])||8}));
+ raw.sort((a,b)=>b.y-a.y);
+ const lines=[];
+ for(const r of raw){const L=lines.find(l=>Math.abs(l.y-r.y)<2.5);L?L.t.push(r):lines.push({y:r.y,t:[r]});}
+ const out=[];
+ for(const L of lines){
+  L.t.sort((a,b)=>a.x-b.x);let c=null;
+  for(const r of L.t){
+   const gap=c?r.x-(c.x+c.w):0;
+   if(c&&gap<c.h*0.7){
+    const sp=/\s$/.test(c.s)||/^\s/.test(r.s)||gap<c.h*0.12?'':' ';
+    c.s+=sp+r.s;c.w=r.x+r.w-c.x;
+   }else{if(c)out.push(c);c={...r};}
+  }
+  if(c)out.push(c);
+ }
+ return out;
+}
+/* Nomor resi: J&T Express berawalan huruf (JY..., JD...), J&T Cargo 12 angka */
+function findResi(all){
+ let m=all.match(/\bJ[A-Z]\d{8,12}\b/);
+ if(m)return m[0];
+ m=all.match(/(?<!\d)\d{12}(?!\d)/);
+ return m?m[0]:'';
+}
+function info(items){
+ const it=lineItems(items);
+ const all=it.map(i=>i.s).join(' ');
+ const type=/TT\s*Order\s*ID|Print\s*Time/i.test(all)?'cargo':'express';
+ const oid=(all.match(/\d{16,}/)||[''])[0],resi=findResi(all);
+ const hd=it.find(i=>/^Product\s*Name$/i.test(i.s.trim())),sku=it.find(i=>/^SKU$/i.test(i.s.trim())),qh=it.find(i=>/^Qty$/i.test(i.s.trim())),qt=it.find(i=>/Qty\s*Total/i.test(i.s));
+ if(!hd){console.warn('Product Name tidak ketemu. Teks terbaca:',it.map(i=>i.s));return{name:null,qty:1,type,oid,resi,mark:[],lines:[]};}
+ const rows=it.filter(i=>i.y<hd.y-2&&(!qt||i.y>qt.y+2));
+ const nm=rows.filter(i=>!sku||i.x<sku.x-3).sort((a,b)=>b.y-a.y||a.x-b.x).map(i=>i.s).join(' ');
+ const qi=rows.filter(i=>qh&&i.x>qh.x-25&&/^\d+$/.test(i.s.trim())),qs=qi.map(i=>+i.s);
+ const mark=qi.filter(i=>+i.s>1).map(i=>({vx:i.x,vy:i.y,vw:i.w,vh:i.h,hx:qh.x,hy:qh.y,hw:qh.w}));
+ /* satu baris produk per SKU (kalau 1 resi berisi lebih dari 1 barang) */
+ const lim=sku?sku.x-3:1e9,groups=[];
+ rows.slice().sort((a,b)=>b.y-a.y||a.x-b.x).forEach(r=>{const g=groups[groups.length-1];if(g&&Math.abs(g.y-r.y)<2.5)g.t.push(r);else groups.push({y:r.y,t:[r]});});
+ const lines=[];let cur=null;
+ for(const g of groups){
+  const name=norm(g.t.filter(i=>i.x<lim).sort((a,b)=>a.x-b.x).map(i=>i.s).join(' '));
+  const q=g.t.find(i=>qh&&i.x>qh.x-25&&/^\d+$/.test(i.s.trim()));
+  if(q){const n=+q.s;if(cur&&cur.qty==null){cur.name=norm(cur.name+' '+name);cur.qty=n;}else{cur={name,qty:n};lines.push(cur);}}
+  else if(name){if(cur)cur.name=norm(cur.name+' '+name);else{cur={name,qty:null};lines.push(cur);}}
+ }
+ const total=qs.reduce((a,b)=>a+b,0)||1,ls=lines.filter(l=>l.name||l.qty).map(l=>({name:l.name,qty:l.qty||1}));
+ return{name:norm(nm)||null,qty:total,type,oid,resi,mark,lines:ls.length?ls:[{name:norm(nm),qty:total}]};
+}
+async function parseFile(f){
+ const bytes=new Uint8Array(await f.arrayBuffer());
+ const doc=await pdfjsLib.getDocument({data:bytes.slice()}).promise,pages=[];
+ for(let i=1;i<=doc.numPages;i++){const p=await doc.getPage(i);pages.push(info((await p.getTextContent()).items));}
+ doc.destroy();return{id:++S.uid,name:f.name,bytes,pages};
+}
+
+/* ================= Rencana: urut, filter, bagi ================= */
+function plan(){
+ const seen=new Set(),all=[];let dup=0;
+ S.files.forEach((f,fi)=>f.pages.forEach((p,pi)=>{
+  const name=p.name||'',key=(name||UNREAD).toLowerCase();
+  if(S.drop.has(key))return;
+  if(p.oid&&seen.has(p.oid)){dup++;if(S.dedup)return;}
+  seen.add(p.oid);
+  all.push({fi,pi,name,key,q:p.qty>1?1:0,seq:all.length,type:p.type,qty:p.qty,mark:p.mark,oid:p.oid,resi:p.resi||'',lines:p.lines||[]});
+ }));
+ all.sort((a,b)=>(a.name?0:1)-(b.name?0:1)||coll.compare(a.name,b.name)||a.q-b.q||a.seq-b.seq);
+ return{items:all,dup,miss:all.filter(i=>!i.name).length};
+}
+function finishGroups(map){
+ const gs=[...map.values()].sort((a,b)=>coll.compare(a.key,b.key));
+ gs.forEach(g=>{const r=(t,m)=>g.items.filter(i=>i.type===t&&(i.qty>1)===m);
+  g.items=[...r('express',false),...r('express',true),...r('cargo',false),...r('cargo',true)];
+  g.ex=g.items.filter(i=>i.type==='express').length;g.cg=g.items.length-g.ex;g.mq=g.items.filter(i=>i.qty>1).length;g.qty=g.items.reduce((a,i)=>a+i.qty,0);});
+ return gs;
+}
+function groupItems(items){
+ const map=new Map();
+ items.forEach(it=>{const key=(it.name||UNREAD).toLowerCase();if(!map.has(key))map.set(key,{key,name:it.name||UNREAD,items:[]});map.get(key).items.push(it);});
+ return finishGroups(map);
+}
+const label=it=>it.name||UNREAD;
+function range(items){
+ if(!items.length)return'';
+ const a=label(items[0]),b=label(items[items.length-1]);
+ return a===b?a:a+' \u2192 '+b;
+}
+function splitEven(items,n){
+ const P=Math.max(1,Math.min(n,items.length)),base=Math.floor(items.length/P),rem=items.length%P,out=[];
+ let i=0;for(let k=0;k<P;k++){const c=base+(k<rem?1:0);out.push(items.slice(i,i+c));i+=c;}
+ return items.length?out:[];
+}
+const mkPart=items=>({items,gs:groupItems(items),n:items.length,range:range(items),cfg:{packer:'',res:null}});
+function invalidate(o){o.cfg.hist=null;if(o.cfg.res){URL.revokeObjectURL(o.cfg.res.url);o.cfg.res=null;}}
+const touched=()=>S.parts.some(o=>o.cfg.packer.trim()||o.cfg.res);
+const locked=()=>S.mode==='manual'&&S.parts.length>0;
+
+/* Semua perubahan yang mempengaruhi pembagian lewat sini */
+function change(fn,text){
+ if(locked()){msg('#pm','Pembagian sedang berjalan dan dikunci. Tekan "Ulangi pembagian" dulu kalau mau mengubah.',1);return false;}
+ if(touched()&&!confirm(text||'Perubahan ini akan menghapus nama packer dan hasil convert. Lanjutkan?'))return false;
+ fn();sync();return true;
+}
+function sync(){
+ const{items}=plan();
+ if(S.mode==='even'){
+  S.parts.forEach(invalidate);
+  S.n=Math.max(1,Math.min(S.n,items.length||1));
+  S.parts=splitEven(items,S.n).map(mkPart);
+ }
+ render();
+}
+
+/* ================= Upload PDF ================= */
+function wire(el,pick,take){
+ el.addEventListener('click',pick);
+ el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();pick();}});
+ el.addEventListener('dragover',e=>{e.preventDefault();el.classList.add('on');});
+ el.addEventListener('dragleave',()=>el.classList.remove('on'));
+ el.addEventListener('drop',e=>{e.preventDefault();el.classList.remove('on');take(e);});
+}
+wire($('#dz'),()=>$('#fi').click(),e=>addFiles(e.dataTransfer.files));
+$('#fi').onchange=e=>{addFiles(e.target.files);e.target.value='';};
+async function addFiles(list){
+ const fs=[...list].filter(f=>/pdf$/i.test(f.type)||/\.pdf$/i.test(f.name));
+ if(!fs.length)return;
+ if(locked()){msg('#pm','Upload dikunci selama pembagian berjalan. Tekan "Ulangi pembagian" dulu.',1);return;}
+ if(touched()&&!confirm('Menambah file akan membagi ulang dan menghapus nama packer serta hasil convert. Lanjutkan?'))return;
+ S.busy=true;
+ const added=[];
+ for(const[i,f]of fs.entries()){
+  msg('#pm',`Membaca ${f.name} (${i+1}/${fs.length})...`);
+  try{added.push(await parseFile(f));}catch(e){console.error(e);msg('#pm',`Gagal membaca ${f.name}: file bukan PDF yang valid.`,1);}
+  await sleep(0);
+ }
+ S.busy=false;
+ S.files.push(...added);sync();
+}
+$('#fl').addEventListener('click',e=>{
+ const b=e.target.closest('[data-rm]');if(!b)return;
+ change(()=>{S.files=S.files.filter(f=>f.id!==+b.dataset.rm);},'Menghapus file akan membagi ulang dan menghapus nama packer serta hasil convert. Lanjutkan?');
+});
+
+/* ================= Render ================= */
+const X_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"/></svg>';
+function render(){
+ const has=S.files.length>0,pl=plan(),items=pl.items,total=items.length;
+ $('#flow').hidden=!has;
+ $('#fl').innerHTML=S.files.map(f=>`<li class="f"><span class="n">${esc(f.name)}</span><small>${f.pages.length} resi</small>${locked()?'':`<button class="x" data-rm="${f.id}" aria-label="Hapus ${esc(f.name)}">Hapus</button>`}</li>`).join('');
+ if(!S.busy)msg('#pm',has?`${S.files.length} file, ${S.files.reduce((a,f)=>a+f.pages.length,0)} resi.`+(locked()?' Upload dan perubahan dikunci selama pembagian berjalan.':''):'');
+ if(!has){S.parts=[];S.pos=0;S.agg=[];renderCfg();return;}
+ /* produk */
+ const map=new Map();
+ items.forEach(it=>{if(!map.has(it.key))map.set(it.key,{key:it.key,name:it.name||UNREAD,count:0,qty:0});const g=map.get(it.key);g.count++;g.qty+=it.qty;});
+ S.agg=[...map.values()];
+ $('#pl').innerHTML=S.agg.map((g,i)=>`<div class="prod"><div class="t"><b>${esc(g.name)}</b><span><span class="tag">${g.count} resi</span>${g.qty} paket</span></div><button class="rm" type="button" data-dk="${i}" title="Hapus produk ini dari cetakan" aria-label="Hapus produk ${esc(g.name)}">${X_SVG}</button></div>`).join('')||'<p class="msg" style="margin:0">Tidak ada resi tersisa. Kembalikan produk yang dihapus.</p>';
+ $('#rb').hidden=!S.drop.size;$('#rt').textContent=`${S.drop.size} produk dihapus dari cetakan.`;
+ $('#mw').hidden=!pl.miss;$('#mw').textContent=`${pl.miss} resi nama produknya tidak terbaca, dikelompokkan terpisah di urutan paling akhir.`;
+ $('#dd').hidden=!pl.dup;$('#dc').checked=S.dedup;$('#dt').textContent=`${pl.dup} resi dobel terdeteksi (Order ID sama). Buang yang dobel.`;
+ /* pembagian */
+ document.querySelectorAll('[data-mode]').forEach(b=>{b.setAttribute('aria-selected',String(b.dataset.mode===S.mode));b.disabled=locked()&&b.dataset.mode!==S.mode;});
+ $('#me').hidden=S.mode!=='even';$('#mm').hidden=S.mode!=='manual';
+ if(S.mode==='even'){
+  $('#np').value=S.n;$('#np').max=total;
+  const sizes=[...new Set(S.parts.map(p=>p.n))].sort((a,b)=>b-a);
+  $('#sm').textContent=total?(S.n===1?`${total} resi dalam 1 file (tidak dibagi).`:`${total} resi dibagi ${S.parts.length} file: `+(sizes.length===1?`masing-masing ${sizes[0]} resi.`:`${sizes.join(' atau ')} resi per file.`))+' Resi Qty lebih dari 1 ditaruh di bagian belakang tiap produk.':'';
+ }else{
+  const rest=total-S.pos;
+  $('#mt').textContent=total;$('#mk').textContent=S.pos;$('#mr').textContent=rest;
+  $('#mb').style.width=(total?S.pos/total*100:0)+'%';
+  $('#tn').max=rest;$('#tn').disabled=rest<=0;$('#tc').disabled=rest<=0||S.busy;$('#tall').disabled=rest<=0||S.busy;
+  $('#tall').textContent=rest>0?`Ambil semua sisa (${rest})`:'Ambil semua sisa';
+  $('#tre').hidden=!S.parts.length;
+  updTr();
+ }
+ renderCfg();
+}
+function updTr(){
+ const{items}=plan(),rest=items.length-S.pos,v=$('#tn').value.trim(),n=Math.floor(Number(v)),e=$('#tr');
+ e.className='msg';
+ if(rest<=0){e.textContent=items.length?'Semua resi sudah diambil.':'Belum ada resi.';return;}
+ if(!v){e.textContent=`Resi berikutnya mulai dari ${label(items[S.pos])}.`;return;}
+ if(!(n>=1)||n>rest){e.className='msg w';e.textContent=`Isi angka antara 1 dan ${rest}.`;return;}
+ e.textContent=`Akan mengambil ${n} resi: ${range(items.slice(S.pos,S.pos+n))}`;
+}
+
+/* ===== produk: hapus / kembalikan / dobel ===== */
+$('#pl').addEventListener('click',e=>{const b=e.target.closest('[data-dk]');if(!b)return;const g=S.agg[+b.dataset.dk];if(g)change(()=>S.drop.add(g.key));});
+$('#ru').onclick=()=>change(()=>S.drop.clear());
+$('#dc').onchange=e=>{const v=e.target.checked;if(!change(()=>{S.dedup=v;}))e.target.checked=S.dedup;};
+
+/* ===== bagi rata ===== */
+const setN=v=>{
+ const n=Math.max(1,Math.round(+v)||1);
+ if(!change(()=>{S.n=n;}))render();
+};
+$('#mn').onclick=()=>setN(S.n-1);
+$('#pls').onclick=()=>setN(S.n+1);
+$('#np').onchange=e=>setN(e.target.value);
+
+/* ===== mode ===== */
+document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{
+ if(b.dataset.mode===S.mode||locked())return;
+ if(touched()&&!confirm('Pindah cara membagi akan menghapus nama packer dan hasil convert. Lanjutkan?'))return;
+ S.parts.forEach(invalidate);
+ S.mode=b.dataset.mode;S.pos=0;S.parts=[];sync();
+});
+
+/* ===== tentukan sendiri ===== */
+function take(n){
+ if(S.busy)return;
+ const{items}=plan(),rest=items.length-S.pos;
+ n=Math.floor(Number(n));
+ if(!(n>=1)||n>rest){updTr();$('#tn').focus();return;}
+ S.parts.push(mkPart(items.slice(S.pos,S.pos+n)));S.pos+=n;
+ $('#tn').value='';render();
+ const sec=$('#s4');if(sec.scrollIntoView)sec.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+$('#tc').onclick=()=>take($('#tn').value);
+$('#tn').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();take($('#tn').value);}});
+$('#tn').addEventListener('input',updTr);
+$('#tall').onclick=()=>{const rest=plan().items.length-S.pos;if(rest>0)take(rest);};
+$('#tre').onclick=()=>{
+ if(touched()&&!confirm('Ulangi pembagian menghapus semua file hasil bagi beserta nama packer dan hasil convert. Lanjutkan?'))return;
+ S.parts.forEach(invalidate);S.parts=[];S.pos=0;$('#tn').value='';sync();
+};
+
+/* ================= Gambar footer & produk ================= */
+async function shrink(file,max,png){
+ const u=URL.createObjectURL(file);
+ const im=await new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=u;});
+ const k=Math.min(1,max/Math.max(im.width,im.height)),c=document.createElement('canvas');
+ c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);
+ const x=c.getContext('2d');if(!png){x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);}
+ x.drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);
+ const blob=await new Promise(r=>c.toBlob(r,png?'image/png':'image/jpeg',.9));
+ return{bytes:new Uint8Array(await blob.arrayBuffer()),url:URL.createObjectURL(blob),png:!!png,w:c.width,h:c.height};
+}
+function showFoot(){
+ $('#ft').innerHTML=S.foot.url?`<img src="${S.foot.url}" alt="Gambar footer">`:'Gambar footer (opsional)';
+ $('#fd').hidden=!S.foot.url;
+}
+function loadFoot(){
+ try{
+  const j=JSON.parse(localStorage.getItem('rr_foot')||'null');
+  if(j&&j.d){S.foot={bytes:Uint8Array.from(atob(j.d.split(',')[1]),c=>c.charCodeAt(0)),w:j.w,h:j.h,url:j.d};}
+ }catch(e){}
+ showFoot();
+}
+async function setFoot(f){
+ if(!f||!f.type.startsWith('image/'))return;
+ try{
+  const im=await shrink(f,1000,true);
+  let s='';for(let i=0;i<im.bytes.length;i+=8192)s+=String.fromCharCode.apply(null,im.bytes.subarray(i,i+8192));
+  const d='data:image/png;base64,'+btoa(s);
+  S.foot={bytes:im.bytes,w:im.w,h:im.h,url:d};
+  try{localStorage.setItem('rr_foot',JSON.stringify({d,w:im.w,h:im.h}));}catch(e){}
+  S.parts.forEach(invalidate);showFoot();renderCfg();
+ }catch(e){msg('#cst','Gambar footer gagal dibaca.',1);}
+}
+wire($('#ft'),()=>$('#ffi').click(),e=>setFoot(e.dataTransfer.files[0]));
+$('#ffi').onchange=e=>{setFoot(e.target.files[0]);e.target.value='';};
+$('#fd').onclick=()=>{S.foot={bytes:null,w:1000,h:200,url:null};try{localStorage.removeItem('rr_foot');}catch(e){}S.parts.forEach(invalidate);showFoot();renderCfg();};
+
+/* ================= Kartu tiap file ================= */
+function actHtml(o,i){
+ const r=o.cfg.res;
+ if(!r)return'<span class="msg" style="margin:0">Belum di-convert</span>';
+ return`<span class="ok">Siap: ${esc(r.name)}</span><a class="dlb" href="${r.url}" download="${esc(r.name)}">Download</a><a class="dlb" href="${r.url}" target="_blank" rel="noopener">Buka</a>`
+  +(r.tight||r.nospot?`<span class="msg w" style="margin:0">${r.tight?r.tight+' resi ruang bawahnya sempit. ':''}${r.nospot?r.nospot+' resi tanpa ruang kotak Qty.':''}</span>`:'')+histHtml(o,i);
+}
+function histHtml(o,i){
+ const h=o.cfg.hist;if(!h)return'';
+ if(h.state==='saving')return'<span class="msg" style="margin:0;flex-basis:100%">Menyimpan riwayat ke spreadsheet...</span>';
+ if(h.state==='ok')return`<span class="msg" style="margin:0;flex-basis:100%">Riwayat tersimpan di spreadsheet: ${h.baru} baris baru${h.upd?`, ${h.upd} diperbarui`:''}.${h.noresi?` ${h.noresi} baris tanpa nomor resi terbaca.`:''}</span>`;
+ return`<span class="msg w" style="margin:0;flex-basis:100%">Riwayat gagal disimpan: ${esc(h.msg)}</span><button class="x" type="button" data-hr="${i}">Coba simpan lagi</button>`;
+}
+function cardHtml(o,i){
+ return`<div class="cfgc"><div class="chead"><div class="pn">${i+1}</div><div class="pt"><b>${o.n} resi &middot; ${o.gs.length} produk</b><span title="${esc(o.range)}">${esc(o.range)}</span></div></div>
+ <label for="pk-${i}">Nama packer</label><input type="text" class="pkx" id="pk-${i}" data-i="${i}" value="${esc(o.cfg.packer)}" placeholder="Contoh: Nita" autocomplete="off">
+ <div class="cprods">${o.gs.map((g,j)=>{const im=S.imgs[g.key];return`<div class="cprod"><div class="thumb sm" tabindex="0" role="button" data-ti="${i}" data-tj="${j}" aria-label="Gambar untuk ${esc(g.name)}">${im?`<img src="${im.url}" alt="">`:'+ Gambar'}</div><div class="t"><b>${esc(g.name)}</b><span>${g.items.length} resi &middot; ${g.qty} paket</span></div>${im?`<button class="x" type="button" data-gd="${i}|${j}">Hapus gambar</button>`:''}</div>`}).join('')}</div>
+ <div class="pact" id="pa-${i}">${actHtml(o,i)}</div></div>`;
+}
+function renderCfg(){
+ $('#s4').hidden=!S.parts.length;
+ $('#cfg').innerHTML=S.parts.map(cardHtml).join('');
+ updSummary();
+}
+function updSummary(){
+ const parts=S.parts;if(!parts.length)return;
+ const noName=parts.filter(o=>!o.cfg.packer.trim()).length,pend=parts.filter(o=>!o.cfg.res).length;
+ const miss=new Set();parts.forEach(o=>o.gs.forEach(g=>{if(!S.imgs[g.key])miss.add(g.key);}));
+ const done=pend===0;
+ $('#cs').className='msg'+(noName||miss.size?' w':'');
+ $('#cs').textContent=`${parts.length-noName} dari ${parts.length} file sudah diberi nama packer. `+(miss.size?`${miss.size} gambar produk belum diisi (boleh dikosongkan). `:'Semua gambar produk sudah diisi. ')+(noName?'Isi nama packer di semua file untuk lanjut.':'');
+ $('#cgo').hidden=done;$('#cgo').disabled=S.cbusy||noName>0;
+ $('#cgo').textContent=pend===parts.length?`Convert semua (${pend} file)`:`Convert ${pend} file lagi`;
+ $('#ctk').hidden=!done;$('#cda').hidden=!done;
+ $('#ctk').textContent=`Tampilkan (${parts.length} tab)`;
+}
+const cfgEl=$('#cfg');
+cfgEl.addEventListener('input',e=>{
+ const t=e.target.closest('.pkx');if(!t)return;
+ const o=S.parts[+t.dataset.i];if(!o)return;
+ o.cfg.packer=t.value;invalidate(o);$('#pa-'+t.dataset.i).innerHTML=actHtml(o,+t.dataset.i);updSummary();
+});
+cfgEl.addEventListener('click',e=>{
+ const hr=e.target.closest('[data-hr]');
+ if(hr){const i=+hr.dataset.hr,o=S.parts[i];if(o&&o.cfg.res)saveHistory(o,i);return;}
+ const d=e.target.closest('[data-gd]');
+ if(d){const[i,j]=d.dataset.gd.split('|').map(Number),key=S.parts[i].gs[j].key;delImg(key);return;}
+ const t=e.target.closest('[data-ti]');if(t){S.tgt={i:+t.dataset.ti,j:+t.dataset.tj};$('#cfi').click();}
+});
+cfgEl.addEventListener('keydown',e=>{const t=e.target.closest('[data-ti]');if(t&&(e.key==='Enter'||e.key===' ')){e.preventDefault();S.tgt={i:+t.dataset.ti,j:+t.dataset.tj};$('#cfi').click();}});
+cfgEl.addEventListener('dragover',e=>{const t=e.target.closest('[data-ti]');if(t){e.preventDefault();t.classList.add('on');}});
+cfgEl.addEventListener('dragleave',e=>{const t=e.target.closest('[data-ti]');if(t)t.classList.remove('on');});
+cfgEl.addEventListener('drop',e=>{const t=e.target.closest('[data-ti]');if(t){e.preventDefault();t.classList.remove('on');setImg(+t.dataset.ti,+t.dataset.tj,e.dataTransfer.files[0]);}});
+$('#cfi').onchange=e=>{const f=e.target.files[0];e.target.value='';if(S.tgt&&f)setImg(S.tgt.i,S.tgt.j,f);};
+const hasKey=(o,key)=>o.gs.some(g=>g.key===key);
+async function setImg(i,j,f){
+ if(!f||!f.type.startsWith('image/'))return;
+ const o=S.parts[i];if(!o||!o.gs[j])return;
+ const key=o.gs[j].key;
+ S.imgs[key]=await shrink(f,1400,false);
+ S.parts.forEach(p=>{if(hasKey(p,key))invalidate(p);});
+ renderCfg();
+}
+function delImg(key){
+ delete S.imgs[key];
+ S.parts.forEach(p=>{if(hasKey(p,key))invalidate(p);});
+ renderCfg();
+}
+
+/* ================= Gambar halaman & PDF ================= */
+const fit=(w,h,bw,bh)=>{const k=Math.min(bw/w,bh/h);return[w*k,h*k];};
+function wrap(font,t,size,max){
+ const out=[];let cur='';
+ for(const w of t.split(' ')){const n=cur?cur+' '+w:w;if(font.widthOfTextAtSize(n,size)>max&&cur){out.push(cur);cur=w;}else cur=n;}
+ if(cur)out.push(cur);return out;
+}
+async function scan(pdf,pi){
+ const p=await pdf.getPage(pi+1),vp=p.getViewport({scale:1}),c=document.createElement('canvas');
+ c.width=Math.ceil(vp.width);c.height=Math.ceil(vp.height);
+ const x=c.getContext('2d',{willReadFrequently:true});x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);
+ await p.render({canvasContext:x,viewport:vp}).promise;
+ const W=c.width,H=c.height,d=x.getImageData(0,0,W,H).data,ink=v=>d[v]<235||d[v+1]<235||d[v+2]<235;
+ let last=0;
+ out:for(let r=H-1;r>=0;r--)for(let q=4;q<W-4;q++)if(ink((r*W+q)*4)){last=r+1;break out;}
+ return{ink:last,W,H,ink4:ink,d};
+}
+function findSpot(sc,w,h,ax,ay){
+ const{W,H,d}=sc,I=new Uint32Array((W+1)*(H+1));
+ for(let y=0;y<H;y++){let row=0;for(let x=0;x<W;x++){const o=(y*W+x)*4;if(d[o]<235||d[o+1]<235||d[o+2]<235)row++;I[(y+1)*(W+1)+x+1]=I[y*(W+1)+x+1]+row;}}
+ const cnt=(x,y,w,h)=>I[(y+h)*(W+1)+x+w]-I[y*(W+1)+x+w]-I[(y+h)*(W+1)+x]+I[y*(W+1)+x];
+ let best=null;
+ for(let y=4;y+h<=sc.ink;y+=2)for(let x=4;x+w<=W-4;x+=2){
+  const f=cnt(x,y,w,h)/(w*h);if(f>.04)continue;
+  const dist=Math.hypot(x-ax,y-ay)+f*400;if(!best||dist<best.dist)best={x,y,dist};
+ }
+ return best;
+}
+function qtyMark(pg,font,rgb,sc,it,pw,ph){
+ for(const m of it.mark){
+  const cx=((m.vx+m.vw/2)+(m.hx+m.hw/2))/2,cy=(m.vy+m.hy)/2+Math.max(m.vh,6)*.3;
+  pg.drawEllipse({x:cx,y:cy,xScale:Math.max(m.vw,m.hw)/2+8,yScale:Math.abs(m.hy-m.vy)/2+9,borderColor:rgb(0,0,0),borderWidth:1.6});
+ }
+ const txt='Qty : '+it.qty;let sp=null,bw=144,bh=52;const k=pw/595;
+ for(const[w0,h0]of[[144,52],[124,45],[104,38],[86,31],[70,25],[56,20],[44,16]]){const w=Math.round(w0*k),h=Math.round(h0*k);sp=findSpot(sc,w,h,pw*.66,240*k);if(sp){bw=w;bh=h;break;}}
+ const miss=!sp;if(miss){bw=Math.round(70*k);bh=Math.round(25*k);sp={x:pw*.66,y:240*k};}
+ const top=ph-sp.y,bot=top-bh,r=Math.round(bh*.2);
+ pg.drawSvgPath(`M ${r} 0 H ${bw-r} Q ${bw} 0 ${bw} ${r} V ${bh-r} Q ${bw} ${bh} ${bw-r} ${bh} H ${r} Q 0 ${bh} 0 ${bh-r} V ${r} Q 0 0 ${r} 0 Z`,{x:sp.x,y:top,color:rgb(0,0,0)});
+ let size=bh*.62;while(size>5&&font.widthOfTextAtSize(txt,size)>bw-8)size-=.5;
+ pg.drawText(txt,{x:sp.x+(bw-font.widthOfTextAtSize(txt,size))/2,y:bot+(bh-size*.72)/2,size,font,color:rgb(1,1,1)});
+ return miss;
+}
+function outName(packer,total){
+ const d=new Date(),z=n=>String(n).padStart(2,'0');
+ const nama=packer.replace(/[\\/:*?"<>|\u0000-\u001f]/g,'').trim().replace(/\s+/g,'_')||'Resi';
+ return `${nama}_${z(d.getDate())}-${z(d.getMonth()+1)}-${d.getFullYear()}_${z(d.getHours())}-${z(d.getMinutes())}_${total}resi.pdf`;
+}
+function newCtx(fb){return{fb,src:new Map(),view:new Map()};}
+async function ctxSrc(ctx,fi){if(!ctx.src.has(fi))ctx.src.set(fi,await PDFLib.PDFDocument.load(ctx.fb[fi],{ignoreEncryption:true}));return ctx.src.get(fi);}
+async function ctxView(ctx,fi){if(!ctx.view.has(fi))ctx.view.set(fi,await pdfjsLib.getDocument({data:ctx.fb[fi].slice()}).promise);return ctx.view.get(fi);}
+function freeCtx(ctx){ctx.view.forEach(v=>{try{v.destroy();}catch(e){}});}
+async function buildRapi(ctx,gs,packer,imgs,foot,onProg){
+ const{PDFDocument,StandardFonts,rgb}=PDFLib,total=gs.reduce((a,g)=>a+g.items.length,0),fname=outName(packer,total);
+ const out=await PDFDocument.create();
+ out.setTitle(fname.replace(/\.pdf$/i,''),{showInWindowTitleBar:true});
+ const bold=await out.embedFont(StandardFonts.HelveticaBold),reg=await out.embedFont(StandardFonts.Helvetica);
+ let footImg=foot&&foot.bytes?await out.embedPng(foot.bytes):null,done=0,tight=0,nospot=0;
+ const nm=packer.replace(OK,'')||'-';
+ for(const g of gs){
+  const first=(await ctxSrc(ctx,g.items[0].fi)).getPage(g.items[0].pi),{width:W,height:H}=first.getSize();
+  const kp=out.addPage([W,H]),m=Math.max(14,W*.06),sc0=W/595,aw0=W-2*m;
+  const ts=36*sc0,title=g.name.toUpperCase().replace(OK,'');
+  let y=H-m-ts*.85;
+  for(const l of wrap(bold,title,ts,aw0)){kp.drawText(l,{x:m,y,size:ts,font:bold});y-=ts*1.2;}
+  y+=ts*.2;
+  const dl=[`Packer : ${nm}`,`Jumlah Resi : ${g.items.length}`,`Jumlah Paket : ${g.qty}`,'Gambar :'];
+  let ds=34*sc0;while(ds>10&&dl.some(l=>reg.widthOfTextAtSize(l,ds)>aw0))ds-=1;
+  for(const l of dl){y-=ds*1.25;kp.drawText(l,{x:m,y,size:ds,font:reg});}
+  const im=imgs[g.key];
+  if(im){
+   const e=im.png?await out.embedPng(im.bytes):await out.embedJpg(im.bytes);
+   const bw=W-2*m,bh=y-m-6;
+   if(bh>20){const[w,h]=fit(im.w,im.h,bw,bh);kp.drawImage(e,{x:m+(bw-w)/2,y:y-8-h,width:w,height:h});}
+  }
+  for(const it of g.items){
+   const[pg]=await out.copyPages(await ctxSrc(ctx,it.fi),[it.pi]);out.addPage(pg);
+   const{width:pw,height:ph}=pg.getSize(),sc=await scan(await ctxView(ctx,it.fi),it.pi),ink=sc.ink;
+   const pad=6,top=Math.min(ph-pad,ink+pad),bh=Math.max(ph-pad-top,12);
+   if(bh<16)tight++;
+   const by=pad,fs=Math.min(bh*.62,30),fm=14;
+   let size=fs;const maxN=(pw-2*fm)*.4;
+   while(size>6&&bold.widthOfTextAtSize(nm,size)>maxN)size-=.5;
+   const nw=bold.widthOfTextAtSize(nm,size);
+   pg.drawText(nm,{x:fm,y:by+(bh-size*.72)/2,size,font:bold});
+   if(footImg){
+    const bx=fm+nw+12,bw=pw-fm-bx;
+    if(bw>20){
+     const[w,h]=fit(foot.w,foot.h,bw,bh);
+     pg.drawImage(footImg,{x:bx+(bw-w)/2,y:by+(bh-h)/2,width:w,height:h});
+    }
+   }
+   if(it.mark&&it.mark.length&&qtyMark(pg,bold,rgb,sc,it,pw,ph))nospot++;
+   done++;if(done%5===0||done===total){onProg(done,total);await sleep(0);}
+  }
+ }
+ return{bytes:await out.save(),total,tight,nospot,fname};
+}
+
+/* ================= Convert, tampilkan, download ================= */
+async function convertAll(){
+ if(S.cbusy)return;
+ const parts=S.parts,bad=parts.findIndex(o=>!o.cfg.packer.trim());
+ if(bad>=0){msg('#cst','Isi nama packer di semua file dulu.',1);const el=$('#pk-'+bad);if(el)el.focus();return;}
+ const pend=parts.map((o,i)=>[o,i]).filter(([o])=>!o.cfg.res);
+ if(!pend.length)return;
+ S.cbusy=true;updSummary();
+ const ctx=newCtx(S.files.map(f=>f.bytes));
+ try{
+  for(const[k,[o,i]]of pend.entries()){
+   const r=await buildRapi(ctx,o.gs,o.cfg.packer.trim(),S.imgs,S.foot,(d,t)=>{const b=$('#cbar');b.hidden=false;b.firstElementChild.style.width=(((k+d/t)/pend.length)*100)+'%';msg('#cst',`File ${k+1} dari ${pend.length}: resi ${d} dari ${t}...`);});
+   const used=new Set(parts.filter(p=>p.cfg.res).map(p=>p.cfg.res.name));
+   const name=used.has(r.fname)?r.fname.replace(/\.pdf$/i,`_${i+1}.pdf`):r.fname;
+   o.cfg.res={url:URL.createObjectURL(new Blob([r.bytes],{type:'application/pdf'})),name,total:r.total,tight:r.tight,nospot:r.nospot};
+   refreshAct(o,i);
+   await saveHistory(o,i);
+   await sleep(0);
+  }
+  msg('#cst',`Selesai: ${pend.length} file dirapikan. Tekan Tampilkan untuk membuka semuanya di tab baru, atau Download di tiap file.`);
+ }catch(e){console.error(e);msg('#cst','Convert gagal: '+(e.message||e),1);}
+ freeCtx(ctx);S.cbusy=false;$('#cbar').hidden=true;updSummary();
+}
+$('#cgo').onclick=convertAll;
+$('#ctk').onclick=()=>{
+ const rs=S.parts.filter(o=>o.cfg.res);let n=0;
+ rs.forEach(o=>{if(window.open(o.cfg.res.url,'_blank'))n++;});
+ msg('#cst',n===rs.length?`${n} file dibuka di tab baru.`:`Hanya ${n} dari ${rs.length} tab yang terbuka karena pop-up diblokir. Klik ikon pop-up diblokir di address bar, pilih Izinkan, lalu tekan Tampilkan lagi. Atau pakai tombol Buka di tiap file.`,n<rs.length);
+};
+async function dlAll(list){for(const o of list){const a=document.createElement('a');a.href=o.url;a.download=o.name;document.body.appendChild(a);a.click();a.remove();await sleep(500);}}
+/* Download semua: tanya dulu mau disimpan di folder mana */
+async function saveAll(list){
+ if(!list.length)return;
+ if(typeof window.showDirectoryPicker!=='function'){
+  await dlAll(list);
+  msg('#cst','Browser ini belum mendukung pilih folder, jadi file didownload ke folder Download bawaan. Pakai Chrome atau Edge untuk memilih folder.',1);
+  return;
+ }
+ let dir;
+ try{
+  dir=await window.showDirectoryPicker({id:'rapikan-resi',mode:'readwrite',startIn:'downloads'});
+ }catch(e){
+  if(e&&e.name==='AbortError'){msg('#cst','Dibatalkan, belum ada file yang disimpan.');return;}
+  msg('#cst',e&&e.name==='SecurityError'?'Chrome tidak mengizinkan folder itu. Pilih atau buat subfolder baru (misalnya "Resi"), lalu tekan Download semua lagi.':'Gagal membuka pilihan folder: '+((e&&e.message)||e),1);
+  return;
+ }
+ try{
+  for(const[i,o]of list.entries()){
+   msg('#cst',`Menyimpan file ${i+1} dari ${list.length}...`);
+   const blob=await(await fetch(o.url)).blob();
+   const fh=await dir.getFileHandle(o.name,{create:true}),w=await fh.createWritable();
+   await w.write(blob);await w.close();
+  }
+  msg('#cst',`${list.length} file disimpan di folder "${dir.name}".`);
+ }catch(e){console.error(e);msg('#cst','Gagal menyimpan file: '+((e&&e.message)||e),1);}
+}
+$('#cda').onclick=()=>saveAll(S.parts.filter(o=>o.cfg.res).map(o=>({url:o.cfg.res.url,name:o.cfg.res.name})));
+
+/* ================= Mulai ulang ================= */
+$('#reset').onclick=()=>{
+ if(touched()&&!confirm('Mulai ulang menghapus semua file dan hasil. Pastikan file yang kamu perlukan sudah di-download. Lanjutkan?'))return;
+ S.parts.forEach(invalidate);
+ Object.values(S.imgs).forEach(im=>URL.revokeObjectURL(im.url));
+ S.files=[];S.drop.clear();S.dedup=false;S.mode='even';S.n=1;S.pos=0;S.parts=[];S.imgs={};S.agg=[];S.busy=false;S.cbusy=false;
+ $('#tn').value='';$('#cst').hidden=true;$('#cbar').hidden=true;
+ render();window.scrollTo({top:0});
+};
+
+
+/* ================= Spreadsheet riwayat, login, pencarian ================= */
+const SCRIPT_URL='';   /* tempel alamat Web App Apps Script (berakhiran /exec) di antara tanda kutip ini, lalu simpan file */
+const API={
+ url(){return SCRIPT_URL||localStorage.getItem('rr_api')||'';},
+ token(){return localStorage.getItem('rr_token')||'';},
+ async call(action,data){
+  const url=this.url();
+  if(!url)return{ok:false,error:'no_url'};
+  try{
+   const res=await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(Object.assign({action,token:this.token()},data||{})),redirect:'follow'});
+   const txt=await res.text();
+   try{return JSON.parse(txt);}catch(e){return{ok:false,error:'format'};}
+  }catch(e){return{ok:false,error:'network'};}
+ }
+};
+function errText(r){
+ switch(r&&r.error){
+  case'network':return'tidak bisa terhubung ke server, cek internet';
+  case'format':return'balasan server tidak dikenali, pastikan Web App di-deploy dengan akses "Anyone"';
+  case'no_url':return'alamat Apps Script belum diisi';
+  case'belum_setup':return'kata sandi belum diatur di Apps Script (jalankan aturPassword)';
+  case'bad_request':return'permintaan tidak valid';
+  default:return(r&&r.message)||'terjadi kesalahan di server';
+ }
+}
+const mainEl=document.querySelector('main');
+function showLogin(m){
+ $('#lg').hidden=false;mainEl.inert=true;
+ $('#lgur').hidden=!!SCRIPT_URL;
+ if(!SCRIPT_URL)$('#lgu').value=localStorage.getItem('rr_api')||'';
+ $('#lgd').value=localStorage.getItem('rr_dev')||'';
+ $('#lgp').value='';
+ msg('#lgm',m||'',!!m);
+ setTimeout(()=>{(SCRIPT_URL?$('#lgp'):$('#lgu')).focus();},50);
+}
+function hideLogin(){$('#lg').hidden=true;mainEl.inert=false;}
+function doLogout(m){
+ localStorage.removeItem('rr_token');
+ showLogin(m||'');
+}
+async function doLogin(){
+ const pass=$('#lgp').value;
+ if(!SCRIPT_URL){
+  const u=$('#lgu').value.trim();
+  if(!/^https:\/\/script\.google\.com\/.+\/exec$/.test(u)){msg('#lgm','Isi alamat Apps Script dengan benar (berakhiran /exec).',1);return;}
+  localStorage.setItem('rr_api',u);
+ }
+ if(!pass){msg('#lgm','Isi kata sandi.',1);$('#lgp').focus();return;}
+ const dev=$('#lgd').value.trim()||(navigator.userAgentData&&navigator.userAgentData.platform)||navigator.platform||'Perangkat';
+ $('#lgb').disabled=true;msg('#lgm','Memeriksa...');
+ const r=await API.call('login',{password:pass,perangkat:dev});
+ $('#lgb').disabled=false;
+ if(r.ok&&r.token){
+  localStorage.setItem('rr_token',r.token);localStorage.setItem('rr_dev',dev);
+  $('#lgp').value='';hideLogin();return;
+ }
+ $('#lgp').value='';
+ if(r.error==='salah')msg('#lgm',`Kata sandi salah. Sisa percobaan: ${r.sisa}.`,1);
+ else if(r.error==='locked')msg('#lgm',`Terlalu banyak salah sandi. Login terkunci, coba lagi sekitar ${r.menit} menit lagi.`,1);
+ else msg('#lgm','Gagal masuk: '+errText(r),1);
+}
+$('#lgb').onclick=doLogin;
+$('#lgp').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();doLogin();}});
+$('#logout').onclick=()=>{if(confirm('Keluar dari perangkat ini? Nanti perlu kata sandi lagi untuk masuk.'))doLogout('');};
+
+/* ---- simpan riwayat ---- */
+function histRows(o){
+ const packer=o.cfg.packer.trim(),rows=[];
+ o.items.forEach(it=>{
+  (it.lines&&it.lines.length?it.lines:[{name:it.name,qty:it.qty}]).forEach(l=>rows.push({order:it.oid||'',resi:it.resi||'',nama:l.name||it.name||'',qty:l.qty||1,packer}));
+ });
+ return rows;
+}
+function refreshAct(o,i){if(S.parts[i]!==o)return;const pa=$('#pa-'+i);if(pa)pa.innerHTML=actHtml(o,i);}
+async function saveHistory(o,i){
+ const rows=histRows(o);
+ o.cfg.hist={state:'saving'};refreshAct(o,i);
+ const r=await API.call('save',{rows});
+ if(r.ok)o.cfg.hist={state:'ok',baru:r.baru,upd:r.diperbarui,noresi:rows.filter(x=>!x.resi).length};
+ else if(r.error==='token'){o.cfg.hist={state:'err',msg:'sesi login berakhir'};doLogout('Sesi berakhir. Masuk lagi, lalu tekan "Coba simpan lagi".');}
+ else o.cfg.hist={state:'err',msg:errText(r)};
+ refreshAct(o,i);
+}
+
+/* ---- cari riwayat ---- */
+async function cari(){
+ const q=$('#sq').value.trim();
+ const tb=$('#stb');
+ if(q.length<4){msg('#sms','Ketik minimal 4 karakter.',1);tb.hidden=true;return;}
+ $('#sgo').disabled=true;msg('#sms','Mencari...');
+ const r=await API.call('cari',{q});
+ $('#sgo').disabled=false;
+ if(!r.ok){
+  if(r.error==='token'){doLogout('Sesi berakhir. Masuk lagi.');return;}
+  msg('#sms','Gagal mencari: '+(r.error==='pendek'?'minimal 4 karakter':errText(r)),1);tb.hidden=true;return;
+ }
+ const rows=r.rows||[];
+ tb.hidden=!rows.length;
+ tb.querySelector('tbody').innerHTML=rows.map(x=>`<tr><td>${esc(x.order)}</td><td>${esc(x.resi)}</td><td>${esc(x.nama)}</td><td>${esc(x.qty)}</td><td><b>${esc(x.packer)}</b></td><td>${esc(x.waktu)}</td></tr>`).join('');
+ msg('#sms',rows.length?`${rows.length} baris ditemukan${r.lebih?' (menampilkan yang terbaru)':''}.`:'Tidak ada riwayat yang cocok.');
+}
+$('#sgo').onclick=cari;
+$('#sq').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();cari();}});
+
+/* ---- cek login saat aplikasi dibuka ---- */
+(async function bootAuth(){
+ if(!API.token()){showLogin('');return;}
+ const r=await API.call('verify');
+ if(r&&r.error==='token')doLogout('Sesi tidak berlaku lagi. Masuk dengan kata sandi.');
+})();
+
+/* ================= Instal sebagai aplikasi (PWA) ================= */
+let deferredInstall=null;
+addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstall=e;$('#inst').hidden=false;});
+addEventListener('appinstalled',()=>{deferredInstall=null;$('#inst').hidden=true;});
+$('#inst').onclick=async()=>{if(!deferredInstall)return;deferredInstall.prompt();try{await deferredInstall.userChoice;}catch(e){}deferredInstall=null;$('#inst').hidden=true;};
+
+loadFoot();
+render();
+if("serviceWorker" in navigator&&location.protocol!=="file:")addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+</script>
+</body>
+</html>
