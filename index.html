@@ -611,7 +611,7 @@ async function ctxSrc(ctx,fi){if(!ctx.src.has(fi))ctx.src.set(fi,await PDFLib.PD
 async function ctxView(ctx,fi){if(!ctx.view.has(fi))ctx.view.set(fi,await pdfjsLib.getDocument({data:ctx.fb[fi].slice()}).promise);return ctx.view.get(fi);}
 function freeCtx(ctx){ctx.view.forEach(v=>{try{v.destroy();}catch(e){}});}
 async function buildRapi(ctx,gs,packer,imgs,foot,onProg){
- const{PDFDocument,StandardFonts,rgb}=PDFLib,total=gs.reduce((a,g)=>a+g.items.length,0),fname=outName(packer,total);
+ const{PDFDocument,StandardFonts,rgb,degrees}=PDFLib,total=gs.reduce((a,g)=>a+g.items.length,0),fname=outName(packer,total);
  const out=await PDFDocument.create();
  out.setTitle(fname.replace(/\.pdf$/i,''),{showInWindowTitleBar:true});
  const bold=await out.embedFont(StandardFonts.HelveticaBold),reg=await out.embedFont(StandardFonts.Helvetica);
@@ -620,33 +620,42 @@ async function buildRapi(ctx,gs,packer,imgs,foot,onProg){
  const embed=async im=>{if(!im)return null;if(!embC.has(im))embC.set(im,im.png?await out.embedPng(im.bytes):await out.embedJpg(im.bytes));return embC.get(im);};
  for(const g of gs){
   const first=(await ctxSrc(ctx,g.items[0].fi)).getPage(g.items[0].pi),{width:W,height:H}=first.getSize();
-  const kp=out.addPage([W,H]),m=Math.max(14,W*.06),sc0=W/595,aw0=W-2*m;
-  const ts=36*sc0,title=g.mix?'RESI CAMPURAN':g.name.toUpperCase().replace(OK,'');
-  let y=H-m-ts*.85;
-  for(const l of wrap(bold,title,ts,aw0)){kp.drawText(l,{x:m,y,size:ts,font:bold});y-=ts*1.2;}
-  y+=ts*.2;
-  const dl=[`Packer : ${nm}`,`Jumlah Resi : ${g.items.length}`,`Jumlah Paket : ${g.qty}`,g.mix?`Isi paket : ${g.prods.length} produk`:'Gambar :'];
-  let ds=34*sc0;while(ds>10&&dl.some(l=>reg.widthOfTextAtSize(l,ds)>aw0))ds-=1;
-  for(const l of dl){y-=ds*1.25;kp.drawText(l,{x:m,y,size:ds,font:reg});}
-  if(!g.mix){
+  const kp=out.addPage([W,H]),sc0=W/595;
+  if(g.mix){
+   /* resi campuran: isi halaman disusun MENDATAR lalu diputar 90 derajat searah jarum jam, supaya gambar tiap produk besar.
+      u = arah baca (ke bawah di halaman), v = arah atas huruf (ke kanan di halaman) */
+   const Wl=H,Hl=W,m=Math.max(14,Hl*.03),aw0=Wl-2*m,ts=34*sc0,rot=degrees(-90);
+   const T=(txt,u,v,size,font)=>kp.drawText(txt,{x:v,y:H-u,size,font,rotate:rot});
+   let v=Hl-m-ts*.85;
+   T('RESI CAMPURAN',m,v,ts,bold);
+   const infoTxt=`Packer : ${nm} - Jumlah Resi : ${g.items.length} - Jumlah Paket : ${g.qty}`;
+   let is=16*sc0;while(is>8&&reg.widthOfTextAtSize(infoTxt,is)>aw0)is-=.5;
+   v-=ts*.35+is;T(infoTxt,m,v,is,reg);
+   v-=is*1.35;T('Gambar :',m,v,is,reg);
+   const n=g.prods.length,cols=n<=2?n:2,rowsN=Math.ceil(n/cols),gap=m*.5,top0=v-is*.6;
+   const cw=(aw0-(cols-1)*gap)/cols,ch=(top0-m-(rowsN-1)*gap)/rowsN;
+   for(let p=0;p<n;p++){
+    const pr=g.prods[p],col=p%cols,row=Math.floor(p/cols),cu=m+col*(cw+gap),cTop=top0-row*(ch+gap),cBot=cTop-ch;
+    let fsz=Math.max(8,Math.min(24*sc0,ch*.1)),ln;
+    for(;;){ln=wrap(bold,pr.name.toUpperCase().replace(OK,''),fsz,cw);if(ln.length*fsz*1.15<=ch*.3||fsz<=8)break;fsz-=1;}
+    let base=cTop-fsz;
+    ln.slice(0,4).forEach((l,k)=>{if(k)base-=fsz*1.15;T(l,cu,base,fsz,bold);});
+    const im=imgs[pr.key],e=await embed(im),imgTop=base-fsz*.35,ih=imgTop-cBot;
+    if(e&&ih>20){const[w,h]=fit(im.w,im.h,cw,ih);kp.drawImage(e,{x:imgTop-h,y:H-(cu+(cw-w)/2),width:w,height:h,rotate:rot});}
+   }
+  }else{
+   const m=Math.max(14,W*.06),aw0=W-2*m;
+   const ts=36*sc0,title=g.name.toUpperCase().replace(OK,'');
+   let y=H-m-ts*.85;
+   for(const l of wrap(bold,title,ts,aw0)){kp.drawText(l,{x:m,y,size:ts,font:bold});y-=ts*1.2;}
+   y+=ts*.2;
+   const dl=[`Packer : ${nm}`,`Jumlah Resi : ${g.items.length}`,`Jumlah Paket : ${g.qty}`,'Gambar :'];
+   let ds=34*sc0;while(ds>10&&dl.some(l=>reg.widthOfTextAtSize(l,ds)>aw0))ds-=1;
+   for(const l of dl){y-=ds*1.25;kp.drawText(l,{x:m,y,size:ds,font:reg});}
    const im=imgs[g.key],e=await embed(im);
    if(e){
     const bw=W-2*m,bh=y-m-6;
     if(bh>20){const[w,h]=fit(im.w,im.h,bw,bh);kp.drawImage(e,{x:m+(bw-w)/2,y:y-8-h,width:w,height:h});}
-   }
-  }else{
-   /* resi campuran: tiap produk dapat kotak sendiri berisi nama, total paket, dan gambarnya */
-   const n=g.prods.length,cols=n<=2?n:2,rowsN=Math.ceil(n/cols),top0=y-8,areaH=top0-m,cw=aw0/cols,ch=areaH/rowsN,pad=6*sc0;
-   const tot={};g.items.forEach(it=>(it.lines||[]).forEach(l=>{const k=norm(l.name||'').toLowerCase();tot[k]=(tot[k]||0)+(l.qty||1);}));
-   for(let p=0;p<n;p++){
-    const pr=g.prods[p],col=p%cols,row=Math.floor(p/cols),cx=m+col*cw+pad,cyTop=top0-row*ch-pad,cyBot=top0-(row+1)*ch+pad,iw=cw-2*pad;
-    let fsz=Math.max(8,Math.min(22*sc0,ch*.12)),ln;
-    for(;;){ln=wrap(bold,pr.name.toUpperCase().replace(OK,''),fsz,iw);if(ln.length*fsz*1.15<=ch*.38||fsz<=8)break;fsz-=1;}
-    let yy=cyTop-fsz;
-    ln.slice(0,4).forEach(l=>{kp.drawText(l,{x:cx,y:yy,size:fsz,font:bold});yy-=fsz*1.15;});
-    kp.drawText(`Total ${tot[pr.key]||0} paket`,{x:cx,y:yy,size:fsz*.9,font:reg});
-    const im=imgs[pr.key],e=await embed(im),imgTop=yy-fsz*.9*.5-4,ih=imgTop-cyBot;
-    if(e&&ih>20){const[w,h]=fit(im.w,im.h,iw,ih);kp.drawImage(e,{x:cx+(iw-w)/2,y:imgTop-h,width:w,height:h});}
    }
   }
   for(const it of g.items){
@@ -743,7 +752,7 @@ $('#reset').onclick=()=>{
 
 
 /* ================= Spreadsheet riwayat, login, pencarian ================= */
-const SCRIPT_URL='https://script.google.com/macros/s/AKfycbzA6ctfSHbdh9nJJzQr2z5XFlXSeJRgsM2AwI3XiDXbI18rRjzVUKQeuMBWCb7ge4wttA/exec';   /* tempel alamat Web App Apps Script (berakhiran /exec) di antara tanda kutip ini, lalu simpan file */
+const SCRIPT_URL='';   /* tempel alamat Web App Apps Script (berakhiran /exec) di antara tanda kutip ini, lalu simpan file */
 const API={
  url(){return SCRIPT_URL||localStorage.getItem('rr_api')||'';},
  token(){return localStorage.getItem('rr_token')||'';},
