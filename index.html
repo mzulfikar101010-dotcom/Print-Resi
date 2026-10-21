@@ -97,6 +97,9 @@ input[type=password]{width:100%;font:500 16px Figtree,sans-serif;padding:10px 12
 table.rt{border-collapse:collapse;width:100%;font-size:13px;margin-top:10px}
 table.rt th,table.rt td{text-align:left;padding:8px 10px;border-top:1px solid var(--line);white-space:nowrap}
 table.rt th{color:var(--mute);font-weight:700}
+.cprod.mix{flex-wrap:wrap;align-items:flex-start}
+.mixp{display:flex;gap:10px;align-items:center;flex:1 1 220px;min-width:0}
+.mixp .t b{margin-bottom:4px}
 [hidden]{display:none!important}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
@@ -254,20 +257,34 @@ async function parseFile(f){
 }
 
 /* ================= Rencana: urut, filter, bagi ================= */
+/* Produk-produk dalam 1 resi (unik, sesuai baris di label) */
+function prodsOf(p){
+ const seen=new Set(),out=[];
+ (p.lines||[]).forEach(l=>{const n=norm(l.name||'');if(!n)return;const k=n.toLowerCase();if(!seen.has(k)){seen.add(k);out.push({key:k,name:n});}});
+ return out;
+}
 function plan(){
  const seen=new Set(),all=[];let dup=0;
  S.files.forEach((f,fi)=>f.pages.forEach((p,pi)=>{
-  const name=p.name||'',key=(name||UNREAD).toLowerCase();
+  const pr=prodsOf(p);let name,key,mix=false,prods;
+  if(pr.length>=2){
+   mix=true;prods=pr.slice().sort((a,b)=>coll.compare(a.key,b.key));
+   key='mix:'+prods.map(x=>x.key).join('|');name=prods.map(x=>x.name).join(' + ');
+  }else{
+   name=(pr[0]&&pr[0].name)||p.name||'';key=(name||UNREAD).toLowerCase();prods=[{key,name:name||UNREAD}];
+  }
   if(S.drop.has(key))return;
-  if(p.oid&&seen.has(p.oid)){dup++;if(S.dedup)return;}
-  seen.add(p.oid);
-  all.push({fi,pi,name,key,q:p.qty>1?1:0,seq:all.length,type:p.type,qty:p.qty,mark:p.mark,oid:p.oid,resi:p.resi||'',lines:p.lines||[]});
+  const dk=p.oid?p.oid+'|'+(p.resi||''):'';   /* dobel = Order ID dan nomor resi sama (paket kedua dari 1 pesanan tidak dianggap dobel) */
+  if(dk&&seen.has(dk)){dup++;if(S.dedup)return;}
+  if(dk)seen.add(dk);
+  all.push({fi,pi,name,key,gname:name||UNREAD,mix,prods,q:p.qty>1?1:0,seq:all.length,type:p.type,qty:p.qty,mark:p.mark,oid:p.oid,resi:p.resi||'',lines:p.lines||[]});
  }));
- all.sort((a,b)=>(a.name?0:1)-(b.name?0:1)||coll.compare(a.name,b.name)||a.q-b.q||a.seq-b.seq);
+ /* urutan: produk tunggal A-Z, lalu yang tak terbaca, resi campuran paling akhir; Qty lebih dari 1 di belakang tiap produk */
+ all.sort((a,b)=>(a.mix?1:0)-(b.mix?1:0)||(a.name?0:1)-(b.name?0:1)||coll.compare(a.key,b.key)||a.q-b.q||a.seq-b.seq);
  return{items:all,dup,miss:all.filter(i=>!i.name).length};
 }
 function finishGroups(map){
- const gs=[...map.values()].sort((a,b)=>coll.compare(a.key,b.key));
+ const gs=[...map.values()].sort((a,b)=>(a.mix?1:0)-(b.mix?1:0)||coll.compare(a.key,b.key));
  gs.forEach(g=>{const r=(t,m)=>g.items.filter(i=>i.type===t&&(i.qty>1)===m);
   g.items=[...r('express',false),...r('express',true),...r('cargo',false),...r('cargo',true)];
   g.ex=g.items.filter(i=>i.type==='express').length;g.cg=g.items.length-g.ex;g.mq=g.items.filter(i=>i.qty>1).length;g.qty=g.items.reduce((a,i)=>a+i.qty,0);});
@@ -275,10 +292,10 @@ function finishGroups(map){
 }
 function groupItems(items){
  const map=new Map();
- items.forEach(it=>{const key=(it.name||UNREAD).toLowerCase();if(!map.has(key))map.set(key,{key,name:it.name||UNREAD,items:[]});map.get(key).items.push(it);});
+ items.forEach(it=>{if(!map.has(it.key))map.set(it.key,{key:it.key,name:it.gname,mix:it.mix,prods:it.prods,items:[]});map.get(it.key).items.push(it);});
  return finishGroups(map);
 }
-const label=it=>it.name||UNREAD;
+const label=it=>it.gname||it.name||UNREAD;
 function range(items){
  if(!items.length)return'';
  const a=label(items[0]),b=label(items[items.length-1]);
@@ -350,12 +367,12 @@ function render(){
  if(!has){S.parts=[];S.pos=0;S.agg=[];renderCfg();return;}
  /* produk */
  const map=new Map();
- items.forEach(it=>{if(!map.has(it.key))map.set(it.key,{key:it.key,name:it.name||UNREAD,count:0,qty:0});const g=map.get(it.key);g.count++;g.qty+=it.qty;});
+ items.forEach(it=>{if(!map.has(it.key))map.set(it.key,{key:it.key,name:it.gname,mix:it.mix,count:0,qty:0});const g=map.get(it.key);g.count++;g.qty+=it.qty;});
  S.agg=[...map.values()];
- $('#pl').innerHTML=S.agg.map((g,i)=>`<div class="prod"><div class="t"><b>${esc(g.name)}</b><span><span class="tag">${g.count} resi</span>${g.qty} paket</span></div><button class="rm" type="button" data-dk="${i}" title="Hapus produk ini dari cetakan" aria-label="Hapus produk ${esc(g.name)}">${X_SVG}</button></div>`).join('')||'<p class="msg" style="margin:0">Tidak ada resi tersisa. Kembalikan produk yang dihapus.</p>';
+ $('#pl').innerHTML=S.agg.map((g,i)=>`<div class="prod"><div class="t"><b>${esc(g.name)}</b><span>${g.mix?'<span class="tag" style="background:var(--acc);color:var(--acc-ink)">campuran</span>':''}<span class="tag">${g.count} resi</span>${g.qty} paket</span></div><button class="rm" type="button" data-dk="${i}" title="Hapus produk ini dari cetakan" aria-label="Hapus produk ${esc(g.name)}">${X_SVG}</button></div>`).join('')||'<p class="msg" style="margin:0">Tidak ada resi tersisa. Kembalikan produk yang dihapus.</p>';
  $('#rb').hidden=!S.drop.size;$('#rt').textContent=`${S.drop.size} produk dihapus dari cetakan.`;
  $('#mw').hidden=!pl.miss;$('#mw').textContent=`${pl.miss} resi nama produknya tidak terbaca, dikelompokkan terpisah di urutan paling akhir.`;
- $('#dd').hidden=!pl.dup;$('#dc').checked=S.dedup;$('#dt').textContent=`${pl.dup} resi dobel terdeteksi (Order ID sama). Buang yang dobel.`;
+ $('#dd').hidden=!pl.dup;$('#dc').checked=S.dedup;$('#dt').textContent=`${pl.dup} resi dobel terdeteksi (Order ID dan nomor resi sama). Buang yang dobel.`;
  /* pembagian */
  document.querySelectorAll('[data-mode]').forEach(b=>{b.setAttribute('aria-selected',String(b.dataset.mode===S.mode));b.disabled=locked()&&b.dataset.mode!==S.mode;});
  $('#me').hidden=S.mode!=='even';$('#mm').hidden=S.mode!=='manual';
@@ -474,10 +491,22 @@ function histHtml(o,i){
  if(h.state==='ok')return`<span class="msg" style="margin:0;flex-basis:100%">Riwayat tersimpan di spreadsheet: ${h.baru} baris baru${h.upd?`, ${h.upd} diperbarui`:''}.${h.noresi?` ${h.noresi} baris tanpa nomor resi terbaca.`:''}</span>`;
  return`<span class="msg w" style="margin:0;flex-basis:100%">Riwayat gagal disimpan: ${esc(h.msg)}</span><button class="x" type="button" data-hr="${i}">Coba simpan lagi</button>`;
 }
+function thumbHtml(i,j,p,pr){
+ const im=S.imgs[pr.key];
+ return`<div class="thumb sm" tabindex="0" role="button" data-ti="${i}" data-tj="${j}" data-tp="${p}" aria-label="Gambar untuk ${esc(pr.name)}">${im?`<img src="${im.url}" alt="">`:'+ Gambar'}</div>`;
+}
+function oneHtml(g,i,j){
+ const pr=g.prods[0],im=S.imgs[pr.key];
+ return`<div class="cprod">${thumbHtml(i,j,0,pr)}<div class="t"><b>${esc(g.name)}</b><span>${g.items.length} resi &middot; ${g.qty} paket</span></div>${im?`<button class="x" type="button" data-gd="${i}|${j}|0">Hapus gambar</button>`:''}</div>`;
+}
+function mixHtml(g,i,j){
+ return`<div class="cprod mix"><div class="t" style="flex-basis:100%"><b>Resi campuran: ${g.prods.length} produk</b><span>${g.items.length} resi &middot; ${g.qty} paket &middot; ditaruh di urutan paling akhir. Isi gambar tiap produknya.</span></div>`
+  +g.prods.map((pr,p)=>{const im=S.imgs[pr.key];return`<div class="mixp">${thumbHtml(i,j,p,pr)}<div class="t"><b style="text-transform:uppercase;font-size:13px;overflow-wrap:anywhere;display:block">${esc(pr.name)}</b>${im?`<button class="x" type="button" data-gd="${i}|${j}|${p}">Hapus gambar</button>`:''}</div></div>`;}).join('')+'</div>';
+}
 function cardHtml(o,i){
- return`<div class="cfgc"><div class="chead"><div class="pn">${i+1}</div><div class="pt"><b>${o.n} resi &middot; ${o.gs.length} produk</b><span title="${esc(o.range)}">${esc(o.range)}</span></div></div>
+ return`<div class="cfgc"><div class="chead"><div class="pn">${i+1}</div><div class="pt"><b>${o.n} resi &middot; ${o.gs.length} kelompok</b><span title="${esc(o.range)}">${esc(o.range)}</span></div></div>
  <label for="pk-${i}">Nama packer</label><input type="text" class="pkx" id="pk-${i}" data-i="${i}" value="${esc(o.cfg.packer)}" placeholder="Contoh: Nita" autocomplete="off">
- <div class="cprods">${o.gs.map((g,j)=>{const im=S.imgs[g.key];return`<div class="cprod"><div class="thumb sm" tabindex="0" role="button" data-ti="${i}" data-tj="${j}" aria-label="Gambar untuk ${esc(g.name)}">${im?`<img src="${im.url}" alt="">`:'+ Gambar'}</div><div class="t"><b>${esc(g.name)}</b><span>${g.items.length} resi &middot; ${g.qty} paket</span></div>${im?`<button class="x" type="button" data-gd="${i}|${j}">Hapus gambar</button>`:''}</div>`}).join('')}</div>
+ <div class="cprods">${o.gs.map((g,j)=>g.mix?mixHtml(g,i,j):oneHtml(g,i,j)).join('')}</div>
  <div class="pact" id="pa-${i}">${actHtml(o,i)}</div></div>`;
 }
 function renderCfg(){
@@ -488,7 +517,7 @@ function renderCfg(){
 function updSummary(){
  const parts=S.parts;if(!parts.length)return;
  const noName=parts.filter(o=>!o.cfg.packer.trim()).length,pend=parts.filter(o=>!o.cfg.res).length;
- const miss=new Set();parts.forEach(o=>o.gs.forEach(g=>{if(!S.imgs[g.key])miss.add(g.key);}));
+ const miss=new Set();parts.forEach(o=>o.gs.forEach(g=>g.prods.forEach(pr=>{if(!S.imgs[pr.key])miss.add(pr.key);})));
  const done=pend===0;
  $('#cs').className='msg'+(noName||miss.size?' w':'');
  $('#cs').textContent=`${parts.length-noName} dari ${parts.length} file sudah diberi nama packer. `+(miss.size?`${miss.size} gambar produk belum diisi (boleh dikosongkan). `:'Semua gambar produk sudah diisi. ')+(noName?'Isi nama packer di semua file untuk lanjut.':'');
@@ -507,19 +536,19 @@ cfgEl.addEventListener('click',e=>{
  const hr=e.target.closest('[data-hr]');
  if(hr){const i=+hr.dataset.hr,o=S.parts[i];if(o&&o.cfg.res)saveHistory(o,i);return;}
  const d=e.target.closest('[data-gd]');
- if(d){const[i,j]=d.dataset.gd.split('|').map(Number),key=S.parts[i].gs[j].key;delImg(key);return;}
- const t=e.target.closest('[data-ti]');if(t){S.tgt={i:+t.dataset.ti,j:+t.dataset.tj};$('#cfi').click();}
+ if(d){const[i,j,pp]=d.dataset.gd.split('|').map(Number),key=S.parts[i].gs[j].prods[pp].key;delImg(key);return;}
+ const t=e.target.closest('[data-ti]');if(t){S.tgt={i:+t.dataset.ti,j:+t.dataset.tj,p:+t.dataset.tp};$('#cfi').click();}
 });
-cfgEl.addEventListener('keydown',e=>{const t=e.target.closest('[data-ti]');if(t&&(e.key==='Enter'||e.key===' ')){e.preventDefault();S.tgt={i:+t.dataset.ti,j:+t.dataset.tj};$('#cfi').click();}});
+cfgEl.addEventListener('keydown',e=>{const t=e.target.closest('[data-ti]');if(t&&(e.key==='Enter'||e.key===' ')){e.preventDefault();S.tgt={i:+t.dataset.ti,j:+t.dataset.tj,p:+t.dataset.tp};$('#cfi').click();}});
 cfgEl.addEventListener('dragover',e=>{const t=e.target.closest('[data-ti]');if(t){e.preventDefault();t.classList.add('on');}});
 cfgEl.addEventListener('dragleave',e=>{const t=e.target.closest('[data-ti]');if(t)t.classList.remove('on');});
-cfgEl.addEventListener('drop',e=>{const t=e.target.closest('[data-ti]');if(t){e.preventDefault();t.classList.remove('on');setImg(+t.dataset.ti,+t.dataset.tj,e.dataTransfer.files[0]);}});
-$('#cfi').onchange=e=>{const f=e.target.files[0];e.target.value='';if(S.tgt&&f)setImg(S.tgt.i,S.tgt.j,f);};
-const hasKey=(o,key)=>o.gs.some(g=>g.key===key);
-async function setImg(i,j,f){
+cfgEl.addEventListener('drop',e=>{const t=e.target.closest('[data-ti]');if(t){e.preventDefault();t.classList.remove('on');setImg(+t.dataset.ti,+t.dataset.tj,+t.dataset.tp,e.dataTransfer.files[0]);}});
+$('#cfi').onchange=e=>{const f=e.target.files[0];e.target.value='';if(S.tgt&&f)setImg(S.tgt.i,S.tgt.j,S.tgt.p,f);};
+const hasKey=(o,key)=>o.gs.some(g=>g.prods.some(pr=>pr.key===key));
+async function setImg(i,j,p,f){
  if(!f||!f.type.startsWith('image/'))return;
- const o=S.parts[i];if(!o||!o.gs[j])return;
- const key=o.gs[j].key;
+ const o=S.parts[i];if(!o||!o.gs[j]||!o.gs[j].prods[p])return;
+ const key=o.gs[j].prods[p].key;
  S.imgs[key]=await shrink(f,1400,false);
  S.parts.forEach(p=>{if(hasKey(p,key))invalidate(p);});
  renderCfg();
@@ -559,7 +588,7 @@ function findSpot(sc,w,h,ax,ay){
  return best;
 }
 function qtyMark(pg,font,rgb,sc,it,pw,ph){
- for(const m of it.mark){
+ for(const m of (it.mark||[])){
   const cx=((m.vx+m.vw/2)+(m.hx+m.hw/2))/2,cy=(m.vy+m.hy)/2+Math.max(m.vh,6)*.3;
   pg.drawEllipse({x:cx,y:cy,xScale:Math.max(m.vw,m.hw)/2+8,yScale:Math.abs(m.hy-m.vy)/2+9,borderColor:rgb(0,0,0),borderWidth:1.6});
  }
@@ -587,22 +616,38 @@ async function buildRapi(ctx,gs,packer,imgs,foot,onProg){
  out.setTitle(fname.replace(/\.pdf$/i,''),{showInWindowTitleBar:true});
  const bold=await out.embedFont(StandardFonts.HelveticaBold),reg=await out.embedFont(StandardFonts.Helvetica);
  let footImg=foot&&foot.bytes?await out.embedPng(foot.bytes):null,done=0,tight=0,nospot=0;
- const nm=packer.replace(OK,'')||'-';
+ const nm=packer.replace(OK,'')||'-',embC=new Map();
+ const embed=async im=>{if(!im)return null;if(!embC.has(im))embC.set(im,im.png?await out.embedPng(im.bytes):await out.embedJpg(im.bytes));return embC.get(im);};
  for(const g of gs){
   const first=(await ctxSrc(ctx,g.items[0].fi)).getPage(g.items[0].pi),{width:W,height:H}=first.getSize();
   const kp=out.addPage([W,H]),m=Math.max(14,W*.06),sc0=W/595,aw0=W-2*m;
-  const ts=36*sc0,title=g.name.toUpperCase().replace(OK,'');
+  const ts=36*sc0,title=g.mix?'RESI CAMPURAN':g.name.toUpperCase().replace(OK,'');
   let y=H-m-ts*.85;
   for(const l of wrap(bold,title,ts,aw0)){kp.drawText(l,{x:m,y,size:ts,font:bold});y-=ts*1.2;}
   y+=ts*.2;
-  const dl=[`Packer : ${nm}`,`Jumlah Resi : ${g.items.length}`,`Jumlah Paket : ${g.qty}`,'Gambar :'];
+  const dl=[`Packer : ${nm}`,`Jumlah Resi : ${g.items.length}`,`Jumlah Paket : ${g.qty}`,g.mix?`Isi paket : ${g.prods.length} produk`:'Gambar :'];
   let ds=34*sc0;while(ds>10&&dl.some(l=>reg.widthOfTextAtSize(l,ds)>aw0))ds-=1;
   for(const l of dl){y-=ds*1.25;kp.drawText(l,{x:m,y,size:ds,font:reg});}
-  const im=imgs[g.key];
-  if(im){
-   const e=im.png?await out.embedPng(im.bytes):await out.embedJpg(im.bytes);
-   const bw=W-2*m,bh=y-m-6;
-   if(bh>20){const[w,h]=fit(im.w,im.h,bw,bh);kp.drawImage(e,{x:m+(bw-w)/2,y:y-8-h,width:w,height:h});}
+  if(!g.mix){
+   const im=imgs[g.key],e=await embed(im);
+   if(e){
+    const bw=W-2*m,bh=y-m-6;
+    if(bh>20){const[w,h]=fit(im.w,im.h,bw,bh);kp.drawImage(e,{x:m+(bw-w)/2,y:y-8-h,width:w,height:h});}
+   }
+  }else{
+   /* resi campuran: tiap produk dapat kotak sendiri berisi nama, total paket, dan gambarnya */
+   const n=g.prods.length,cols=n<=2?n:2,rowsN=Math.ceil(n/cols),top0=y-8,areaH=top0-m,cw=aw0/cols,ch=areaH/rowsN,pad=6*sc0;
+   const tot={};g.items.forEach(it=>(it.lines||[]).forEach(l=>{const k=norm(l.name||'').toLowerCase();tot[k]=(tot[k]||0)+(l.qty||1);}));
+   for(let p=0;p<n;p++){
+    const pr=g.prods[p],col=p%cols,row=Math.floor(p/cols),cx=m+col*cw+pad,cyTop=top0-row*ch-pad,cyBot=top0-(row+1)*ch+pad,iw=cw-2*pad;
+    let fsz=Math.max(8,Math.min(22*sc0,ch*.12)),ln;
+    for(;;){ln=wrap(bold,pr.name.toUpperCase().replace(OK,''),fsz,iw);if(ln.length*fsz*1.15<=ch*.38||fsz<=8)break;fsz-=1;}
+    let yy=cyTop-fsz;
+    ln.slice(0,4).forEach(l=>{kp.drawText(l,{x:cx,y:yy,size:fsz,font:bold});yy-=fsz*1.15;});
+    kp.drawText(`Total ${tot[pr.key]||0} paket`,{x:cx,y:yy,size:fsz*.9,font:reg});
+    const im=imgs[pr.key],e=await embed(im),imgTop=yy-fsz*.9*.5-4,ih=imgTop-cyBot;
+    if(e&&ih>20){const[w,h]=fit(im.w,im.h,iw,ih);kp.drawImage(e,{x:cx+(iw-w)/2,y:imgTop-h,width:w,height:h});}
+   }
   }
   for(const it of g.items){
    const[pg]=await out.copyPages(await ctxSrc(ctx,it.fi),[it.pi]);out.addPage(pg);
@@ -621,7 +666,7 @@ async function buildRapi(ctx,gs,packer,imgs,foot,onProg){
      pg.drawImage(footImg,{x:bx+(bw-w)/2,y:by+(bh-h)/2,width:w,height:h});
     }
    }
-   if(it.mark&&it.mark.length&&qtyMark(pg,bold,rgb,sc,it,pw,ph))nospot++;
+   if(it.qty>1&&qtyMark(pg,bold,rgb,sc,it,pw,ph))nospot++;
    done++;if(done%5===0||done===total){onProg(done,total);await sleep(0);}
   }
  }
@@ -698,7 +743,7 @@ $('#reset').onclick=()=>{
 
 
 /* ================= Spreadsheet riwayat, login, pencarian ================= */
-const SCRIPT_URL='https://script.google.com/macros/s/AKfycbzA6ctfSHbdh9nJJzQr2z5XFlXSeJRgsM2AwI3XiDXbI18rRjzVUKQeuMBWCb7ge4wttA/exec';   /* tempel alamat Web App Apps Script (berakhiran /exec) di antara tanda kutip ini, lalu simpan file */
+const SCRIPT_URL='';   /* tempel alamat Web App Apps Script (berakhiran /exec) di antara tanda kutip ini, lalu simpan file */
 const API={
  url(){return SCRIPT_URL||localStorage.getItem('rr_api')||'';},
  token(){return localStorage.getItem('rr_token')||'';},
@@ -766,7 +811,9 @@ $('#logout').onclick=()=>{if(confirm('Keluar dari perangkat ini? Nanti perlu kat
 function histRows(o){
  const packer=o.cfg.packer.trim(),rows=[];
  o.items.forEach(it=>{
-  (it.lines&&it.lines.length?it.lines:[{name:it.name,qty:it.qty}]).forEach(l=>rows.push({order:it.oid||'',resi:it.resi||'',nama:l.name||it.name||'',qty:l.qty||1,packer}));
+  const sum=new Map();
+  (it.lines&&it.lines.length?it.lines:[{name:it.name,qty:it.qty}]).forEach(l=>{const n=l.name||it.name||'';sum.set(n,(sum.get(n)||0)+(l.qty||1));});
+  sum.forEach((qty,nama)=>rows.push({order:it.oid||'',resi:it.resi||'',nama,qty,packer}));
  });
  return rows;
 }
